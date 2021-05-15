@@ -1,18 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<DirectionalLayout
+<DependentLayout
     xmlns:ohos="http://schemas.huawei.com/res/ohos"
     ohos:height="match_parent"
     ohos:width="match_parent"
     ohos:orientation="vertical">
 
     <Text
-        ohos:id="$+id:text_helloworld"
-        ohos:height="match_content"
-        ohos:width="match_content"
-        ohos:background_element="$graphic:background_ability_main"
-        ohos:layout_alignment="horizontal_center"
-        ohos:text="$string:mainability_HelloWorld"
-        ohos:text_size="50px"
-        />
+        ohos:id="$+id:titlebar"
+        ohos:height="48vp"
+        ohos:width="match_parent"
+        ohos:text="$string:app_name"
+        ohos:text_alignment="center"
+        ohos:text_size="18fp"/>
 
-</DirectionalLayout>
+    <Component
+        ohos:id="$+id:titlebarshadow"
+        ohos:height="0.8vp"
+        ohos:width="match_parent"
+        ohos:background_element="#33000000"
+        ohos:below="$id:titlebar"/>
+
+    <ProgressBar
+        ohos:id="$+id:progressbar"
+        ohos:height="match_content"
+        ohos:width="match_parent"
+        ohos:align_bottom="$id:titlebar"
+        ohos:max="120"
+        ohos:min="0"
+        ohos:progress_color="#FF2196F3"
+        ohos:visibility="hide"/>
+
+    <com.jossing.ohos.jsbridge4harmonyos.WebComponent
+        ohos:id="$+id:webview"
+        ohos:height="match_parent"
+        ohos:width="match_parent"
+        ohos:below="$id:titlebarshadow"/>
+
+</DependentLayout>
