@@ -50,6 +50,10 @@ public class WebComponent extends WebView implements WebViewInterface {
         super.executeJs(jsContent, callback);
     }
 
+    public void addJsBridgeFunction(@NotNull String name, @NotNull JsBridgeFunction function) {
+        mJsBridge.addFunction(name, function, true);
+    }
+
 
     /**
      * @see WebAgent#isNeedLoadUrl

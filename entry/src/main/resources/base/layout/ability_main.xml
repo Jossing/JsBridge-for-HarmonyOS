@@ -11,6 +11,7 @@
         ohos:width="match_parent"
         ohos:text="$string:app_name"
         ohos:text_alignment="center"
+        ohos:text_color="#FF000000"
         ohos:text_size="18fp"/>
 
     <Component

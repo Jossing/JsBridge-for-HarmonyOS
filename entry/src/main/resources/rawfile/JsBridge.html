@@ -1,0 +1,61 @@
+<!-- saved from url=(0047)http://218.80.250.91:8091/hdjsdemo/testsmy.html -->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JsBridge</title>
+    <link href="bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<p></p>
+<p style="margin:0px 24px;">
+    <input type="button" class="btn btn-primary btn-lg btn-block" value="setTitle" onclick="setTitle_Click();"/>
+    <input type="button" class="btn btn-primary btn-lg btn-block" value="setTitleColor" onclick="setTitleColor_Click();"/>
+    <input type="button" class="btn btn-primary btn-lg btn-block" value="closeWindow" onclick="closeWindow_Click();"/>
+</p>
+</body>
+
+<script>
+
+    function setTitle_Click() {
+        if (typeof ohosjsbridge == "undefined") {
+            return;
+        }
+        var title = prompt('输入要设置的标题', '标题');
+        if (title == null) {
+            return;
+        }
+        ohosjsbridge.setTitle({
+            title: title
+        }, function (resp) {
+            alert(resp);
+        });
+    }
+
+    function setTitleColor_Click() {
+        if (typeof ohosjsbridge == "undefined") {
+            return;
+        }
+        var color = prompt('输入要设置的颜色（HEX）', '#333333');
+        if (color == null) {
+            return;
+        }
+        ohosjsbridge.setTitleColor({
+            titleColor: color
+        }, function (resp) {
+            alert(resp);
+        });
+    }
+
+    function closeWindow_Click() {
+        if (typeof ohosjsbridge == "undefined") {
+            return;
+        }
+        ohosjsbridge.closeWindow();
+    }
+
+</script>
+
+<script src="JsBridge.js"></script>
+
+</html>

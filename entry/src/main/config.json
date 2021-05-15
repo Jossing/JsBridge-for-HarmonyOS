@@ -56,6 +56,23 @@
             }
           ]
         }
+      },{
+        "permissions": [
+          "com.jossing.ohos.jsbridge4harmonyos.DataAbilityShellProvider.PROVIDER"
+        ],
+        "name": "com.jossing.ohos.jsbridge4harmonyos.DataAbility",
+        "icon": "$media:icon",
+        "description": "$string:dataability_description",
+        "type": "data",
+        "uri": "dataability://com.jossing.ohos.jsbridge4harmonyos.DataAbility",
+        "metaData": {
+          "customizeData": [
+            {
+              "name": "com.example.provider",
+              "extra": "$profile:path"
+            }
+          ]
+        }
       }
     ]
   }

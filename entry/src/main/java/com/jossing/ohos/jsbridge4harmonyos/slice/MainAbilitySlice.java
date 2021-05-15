@@ -4,15 +4,22 @@ import com.jossing.ohos.jsbridge4harmonyos.ResourceTable;
 import com.jossing.ohos.jsbridge4harmonyos.WebComponent;
 import ohos.aafwk.ability.AbilitySlice;
 import ohos.aafwk.content.Intent;
+import ohos.agp.colors.ColorConverter;
+import ohos.agp.colors.RgbColor;
 import ohos.agp.components.Component;
 import ohos.agp.components.ProgressBar;
 import ohos.agp.components.Text;
+import ohos.agp.components.element.ShapeElement;
 import ohos.agp.components.webengine.*;
+import ohos.agp.utils.Color;
 import ohos.hiviewdfx.HiLog;
 import ohos.hiviewdfx.HiLogLabel;
 import ohos.media.image.PixelMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 public class MainAbilitySlice extends AbilitySlice {
 
@@ -22,6 +29,8 @@ public class MainAbilitySlice extends AbilitySlice {
     private ProgressBar mProgressBar;
     private WebComponent mWebComponent;
 
+    private boolean mAllowReceiveWebTitle = true;
+
     @Override
     public void onStart(Intent intent) {
         super.onStart(intent);
@@ -29,15 +38,48 @@ public class MainAbilitySlice extends AbilitySlice {
         mTitleBar = (Text) findComponentById(ResourceTable.Id_titlebar);
         mProgressBar = (ProgressBar) findComponentById(ResourceTable.Id_progressbar);
         mWebComponent = (WebComponent) findComponentById(ResourceTable.Id_webview);
+
         mWebComponent.setWebAgent(mWebAgent);
         mWebComponent.setBrowserAgent(mBrowserAgent);
-        initWebComponent(mWebComponent.getWebConfig());
+        mWebComponent.getWebConfig().setJavaScriptPermit(true);
+        mWebComponent.getWebConfig().setDataAbilityPermit(true);
+        initJsBridgeFunctions();
 
-        mWebComponent.load("https://cn.bing.com");
+        mWebComponent.load("dataability://com.jossing.ohos.jsbridge4harmonyos.DataAbility/rawfile/JsBridge.html");
     }
 
-    private void initWebComponent(@NotNull WebConfig webConfig) {
-        webConfig.setJavaScriptPermit(true);
+    private void initJsBridgeFunctions() {
+        mWebComponent.addJsBridgeFunction("setTitle", (jsBridgeName, data, callback) -> {
+            mAllowReceiveWebTitle = false;
+            try {
+                mTitleBar.setText(URLDecoder.decode(data, "UTF-8"));
+                callback.invoke("success");
+            } catch (UnsupportedEncodingException e) {
+                callback.invoke(e.getMessage());
+            }
+        });
+        mWebComponent.addJsBridgeFunction("setTitleColor", (jsBridgeName, data, callback) -> {
+            try {
+                final RgbColor rgbColor = RgbColor.fromArgbInt(Color.getIntColor(data));
+                rgbColor.setAlpha(0xFF);
+                final ShapeElement background = new ShapeElement();
+                background.setRgbColor(rgbColor);
+                mTitleBar.setBackground(background);
+                getWindow().setStatusBarColor(rgbColor.asArgbInt());
+                final float lightness = ColorConverter.toHsl(rgbColor).getLightness();
+                if (lightness < 60F) {
+                    mTitleBar.setTextColor(Color.WHITE);
+                } else {
+                    mTitleBar.setTextColor(Color.BLACK);
+                }
+                callback.invoke("success");
+            } catch (IllegalArgumentException e) {
+                callback.invoke(e.getMessage());
+            }
+        });
+        mWebComponent.addJsBridgeFunction("closeWindow", (jsBridgeName, data, callback) -> {
+            terminate();
+        });
     }
 
     @Override
@@ -85,6 +127,7 @@ public class MainAbilitySlice extends AbilitySlice {
 
         @Override
         public void onTitleUpdated(@NotNull WebView webView, String value) {
+            if (!mAllowReceiveWebTitle) return;
             mTitleBar.setText(value);
         }
 
