@@ -1,5 +1,4 @@
-apply plugin: 'com.huawei.ohos.hap'
-apply plugin: 'com.huawei.ohos.decctest'
+apply plugin: 'com.huawei.ohos.library'
 ohos {
     compileSdkVersion 5
     defaultConfig {
@@ -13,16 +12,11 @@ ohos {
             }
         }
     }
-
+    
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar', '*.har'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains:annotations:13.0"
     testImplementation 'junit:junit:4.13'
-    ohosTestImplementation 'com.huawei.ohos.testkit:runner:1.0.0.100'
-    implementation project(":jsbridge")
-}
-decc {
-    supportType = ['html', 'xml']
 }

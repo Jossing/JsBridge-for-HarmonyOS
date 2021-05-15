@@ -1,8 +1,6 @@
-package com.jossing.jsbridge;
+package com.jossing.ohos.jsbridge;
 
-import androidx.annotation.MainThread;
-import androidx.annotation.NonNull;
-
+import com.jossing.ohos.annotaion.MainThread;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -10,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author jossing
  */
+@FunctionalInterface
 public interface JsBridgeFunction {
 
     /**
@@ -20,7 +19,7 @@ public interface JsBridgeFunction {
      * @param callback     接口回调
      */
     @MainThread
-    void invoke(@NonNull String jsBridgeName, @NonNull String data, @NonNull Callback callback);
+    void invoke(@NotNull String jsBridgeName, @NotNull String data, @NotNull Callback callback);
 
 
     /**
@@ -28,6 +27,7 @@ public interface JsBridgeFunction {
      * <p>
      * <b>不建议直接实现使用，请使用 {@link CallbackImpl} 代替</b>
      */
+    @FunctionalInterface
     interface Callback {
 
         Callback EMPTY = data -> {
@@ -39,7 +39,7 @@ public interface JsBridgeFunction {
          * @param data 回调数据/参数
          */
         @MainThread
-        void invoke(@NonNull String data);
+        void invoke(@NotNull String data);
     }
 
 
@@ -61,7 +61,7 @@ public interface JsBridgeFunction {
         }
 
         @Override
-        public void invoke(@NonNull String data) {
+        public void invoke(@NotNull String data) {
             if (isCalled) {
                 return;
             }

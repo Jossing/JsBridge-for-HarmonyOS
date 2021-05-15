@@ -1,16 +1,14 @@
-package com.jossing.jsbridge;
+package com.jossing.ohos.jsbridge;
 
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.wonders.libs.android.support.utils.KLog;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import com.jossing.ohos.orgjson.JSONArray;
+import com.jossing.ohos.orgjson.JSONException;
+import com.jossing.ohos.orgjson.JSONObject;
+import com.jossing.ohos.orgjson.JSONTokener;
+import ohos.agp.utils.TextTool;
+import ohos.hiviewdfx.HiLog;
+import ohos.hiviewdfx.HiLogLabel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +18,10 @@ import java.util.List;
  *
  * @author haoqing
  */
+@SuppressWarnings("unused") // Public API
 public final class JsBridgeMessage {
+
+    private static final HiLogLabel LOG_LABEL = new HiLogLabel(HiLog.LOG_APP, 0x65536, "JsBridgeMessage");
 
     private final static String CALLBACK_ID_STR = "callbackId";
     private final static String RESPONSE_ID_STR = "responseId";
@@ -37,7 +38,7 @@ public final class JsBridgeMessage {
     public JsBridgeMessage() {
     }
 
-    JsBridgeMessage(@NonNull final JSONObject jsonObject) {
+    JsBridgeMessage(@NotNull final JSONObject jsonObject) {
         mCallbackId = jsonObject.optString(CALLBACK_ID_STR, null);
         mResponseId = jsonObject.optString(RESPONSE_ID_STR, null);
         mResponseData = jsonObject.optString(RESPONSE_DATA_STR, null);
@@ -90,6 +91,9 @@ public final class JsBridgeMessage {
         this.mHandlerName = handlerName;
     }
 
+    /**
+     * @noinspection ConstantConditions
+     */
     @Nullable
     public String toJson() {
         final JSONObject jsonObject = new JSONObject();
@@ -98,7 +102,7 @@ public final class JsBridgeMessage {
             jsonObject.put(DATA_STR, getData());
             jsonObject.put(HANDLER_NAME_STR, getHandlerName());
             final String data = getResponseData();
-            if (TextUtils.isEmpty(data)) {
+            if (TextTool.isNullOrEmpty(data)) {
                 jsonObject.put(RESPONSE_DATA_STR, data);
             } else {
                 jsonObject.put(RESPONSE_DATA_STR, new JSONTokener(data).nextValue());
@@ -107,30 +111,33 @@ public final class JsBridgeMessage {
             jsonObject.put(RESPONSE_ID_STR, getResponseId());
             return jsonObject.toString();
         } catch (JSONException e) {
-            KLog.w(e);
+            HiLog.error(LOG_LABEL, "toJson\n%s", HiLog.getStackTrace(e));
         }
         return null;
     }
 
+    /**
+     * @noinspection ConstantConditions
+     */
     @Nullable
     public static JsBridgeMessage formJson(String jsonStr) {
         try {
             final JSONObject jsonObject = new JSONObject(jsonStr);
             return new JsBridgeMessage(jsonObject);
         } catch (JSONException e) {
-            KLog.w((Object) jsonStr, e);
+            HiLog.error(LOG_LABEL, "formJson\n%s", HiLog.getStackTrace(e));
         }
         return null;
     }
 
-    @NonNull
-    public static List<JsBridgeMessage> formJsonArray(@NonNull String jsonStr) {
+    @NotNull
+    public static List<JsBridgeMessage> formJsonArray(@NotNull String jsonStr) {
         final List<JsBridgeMessage> list = new ArrayList<>();
         final JSONArray jsonArray;
         try {
             jsonArray = new JSONArray(jsonStr);
         } catch (JSONException e) {
-            KLog.w((Object) jsonStr, e);
+            HiLog.error(LOG_LABEL, "formJsonArray\n%s", HiLog.getStackTrace(e));
             return list;
         }
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -138,7 +145,7 @@ public final class JsBridgeMessage {
             try {
                 jsonObject = jsonArray.getJSONObject(i);
             } catch (JSONException e) {
-                KLog.w(e);
+                HiLog.error(LOG_LABEL, "formJsonArray\n%s", HiLog.getStackTrace(e));
                 continue;
             }
             list.add(new JsBridgeMessage(jsonObject));

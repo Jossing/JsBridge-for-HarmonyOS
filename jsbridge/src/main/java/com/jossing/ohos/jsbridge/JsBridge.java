@@ -1,10 +1,10 @@
-package com.jossing.jsbridge;
+package com.jossing.ohos.jsbridge;
 
-import android.os.SystemClock;
-import android.text.TextUtils;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import com.jossing.ohos.annotaion.MainThread;
+import ohos.agp.components.webengine.ResourceRequest;
+import ohos.agp.components.webengine.WebAgent;
+import ohos.agp.components.webengine.WebView;
+import ohos.agp.utils.TextTool;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author jossing
  * @see JsBridge$Default 默认实现
  */
+@SuppressWarnings("unused") // Public API
 public abstract class JsBridge {
 
     private static final String CALLBACK_ID_PREFIX = "JAVA_CB_";
@@ -64,14 +65,10 @@ public abstract class JsBridge {
     public final void addFunction(@NotNull String name, @NotNull JsBridgeFunction function, boolean allowOverride) {
         final String key = Objects.requireNonNull(name);
         final JsBridgeFunction value = Objects.requireNonNull(function);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (allowOverride) {
-                mNativeFunctions.put(key, value);
-            } else {
-                mNativeFunctions.putIfAbsent(key, value);
-            }
-        } else if (allowOverride || !mNativeFunctions.containsKey(key)) {
+        if (allowOverride) {
             mNativeFunctions.put(key, value);
+        } else {
+            mNativeFunctions.putIfAbsent(key, value);
         }
     }
 
@@ -86,11 +83,7 @@ public abstract class JsBridge {
     public final void removeFunction(@NotNull String name, @NotNull JsBridgeFunction function) {
         final String key = Objects.requireNonNull(name);
         final JsBridgeFunction value = Objects.requireNonNull(function);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            mNativeFunctions.remove(key, value);
-        } else if (value == mNativeFunctions.get(key)) {
-            mNativeFunctions.remove(key);
-        }
+        mNativeFunctions.remove(key, value);
     }
 
     /**
@@ -117,9 +110,9 @@ public abstract class JsBridge {
             @Nullable String data,
             @Nullable JsBridgeFunction.Callback callback
     ) {
-        final long when = SystemClock.currentThreadTimeMillis();
+        final long when = System.nanoTime() / 1_000_000;
         final JsBridgeMessage message = new JsBridgeMessage();
-        if (!TextUtils.isEmpty(data)) {
+        if (!TextTool.isNullOrEmpty(data)) {
             message.setData(data);
         }
         if (callback != null) {
@@ -128,7 +121,7 @@ public abstract class JsBridge {
             mJsFunctionCallbacks.put(callbackId, callback);
             message.setCallbackId(callbackId);
         }
-        if (!TextUtils.isEmpty(functionName)) {
+        if (!TextTool.isNullOrEmpty(functionName)) {
             message.setHandlerName(functionName);
         }
         queueNativeMessage(message);
@@ -139,7 +132,7 @@ public abstract class JsBridge {
      *
      * @param url 请求的链接
      * @return 拦截成功返回 true，否则返回 false
-     * @see WebViewClient#shouldOverrideUrlLoading(WebView, WebResourceRequest)
+     * @see WebAgent#isNeedLoadUrl(WebView, ResourceRequest)
      */
     @MainThread
     public final boolean interceptJsBridgeRequest(@NotNull String url) {
@@ -199,13 +192,13 @@ public abstract class JsBridge {
     protected final void onFetchJsMessageQueueResult(@NotNull final List<JsBridgeMessage> messageList) {
         for (final JsBridgeMessage message : messageList) {
             final String responseId = message.getResponseId();
-            if (!TextUtils.isEmpty(responseId)) {
+            if (!TextTool.isNullOrEmpty(responseId)) {
                 dispatchResponseData(responseId, message.getResponseData());
                 continue;
             }
             final String callbackId = message.getCallbackId();
             final String functionName = message.getHandlerName();
-            if (!TextUtils.isEmpty(functionName)) {
+            if (!TextTool.isNullOrEmpty(functionName)) {
                 dispatchCallbackData(functionName, callbackId, message.getData());
             }
         }
@@ -237,7 +230,7 @@ public abstract class JsBridge {
     @MainThread
     private void dispatchCallbackData(@NotNull String functionName, String callbackId, String callbackData) {
         final JsBridgeFunction.Callback callbackFunction;
-        if (!TextUtils.isEmpty(callbackId)) {
+        if (!TextTool.isNullOrEmpty(callbackId)) {
             callbackFunction = new JsBridgeFunction.CallbackImpl(data -> {
                 final JsBridgeMessage responseMsg = new JsBridgeMessage();
                 responseMsg.setResponseId(callbackId);
@@ -273,7 +266,7 @@ public abstract class JsBridge {
     /**
      * 分发 Native 产生的待分发消息
      *
-     * @see WebViewClient#onPageFinished(WebView, String)
+     * @see WebAgent#onPageLoaded(WebView, String)
      */
     @MainThread
     public final void dispatchNativeMessages() {
